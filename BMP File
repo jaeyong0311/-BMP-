@@ -1,0 +1,79 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <Windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int width, height;
+
+unsigned char* readBMP(const char* filename)
+{
+    FILE* f = fopen(filename, "rb");
+    unsigned char info[100];
+
+    fread(info, sizeof(unsigned char), 54, f);
+    
+    width = *(int*)&info[18];
+    height = *(int*)&info[22];
+
+    int size = 3 * width * height;
+
+    unsigned char* data = (unsigned char*)malloc(size);
+
+    fread(data, sizeof(unsigned char), size, f);
+
+    fclose(f);
+
+    int j;
+
+    for (j = 0; j < size; j += 3)
+    {
+        unsigned char tmp = data[j];
+        data[j] = data[j + 2];
+        data[j + 2] = tmp;
+    }
+    return data; 
+}
+
+int main() {
+
+    Sleep(100);
+
+    HWND myconsole = GetConsoleWindow();
+
+    HDC dc = GetDC(myconsole);
+
+    int i;
+    int a = 0;
+
+    COLORREF color = RGB(0, 255, 0);
+
+    int x = 0;
+    int y = 0;
+
+    unsigned char* arr = readBMP("C:\\Users\\user\\Desktop\\madongsuk.bmp");
+
+    for (i = width * height; i > 0; i--) {
+
+        color = RGB(arr[3 * i], arr[3 * i + 1], arr[3 * i + 2]);
+        SetPixel(dc, x, y, color);
+
+        x++;
+
+        if (x == width) {
+
+            x = 0;
+        }
+
+        if (i % width == 0) {
+
+            y++;
+
+        }
+    }
+
+    while (1) {
+
+        Sleep(100);
+    }
+    return 0;
+}
